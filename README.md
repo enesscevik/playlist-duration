@@ -1,2 +1,1 @@
-# playlist-duration
- 
+This browser extension makes it easier for you to calculate the total duration of your YouTube playlists or, if needed, the total duration of a portion of them.
