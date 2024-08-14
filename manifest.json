@@ -12,6 +12,7 @@
   ],
   "icons": { "16": "yticon.png", "48": "yticon.png", "128": "yticon.png" },
   "action": {
+    "default_popup": "popup.html",
     "default_icon": {
       "16": "yticon.png",
       "48": "yticon.png",

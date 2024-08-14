@@ -1,4 +1,9 @@
 function calculator() {
+  const here = window.location.href;
+  if (!here.includes('playlist')) {
+    return `There is no playlist!`;
+  }
+
   timeElements = document.getElementsByClassName('badge-shape-wiz__text');
 
   let targetTimeElements = Array.from(timeElements).filter(isElementVisible);
@@ -15,11 +20,18 @@ function calculator() {
     }
   });
 
-  let hours = Math.floor(totalSeconds / 3600);
-  let minutes = Math.floor((totalSeconds % 3600) / 60);
-  let seconds = totalSeconds % 60;
-
-  return `     Total: ${hours}h ${minutes}m ${seconds}s (${targetTimeElements.length})`;
+  return `${
+    targetTimeElements.length
+  } videos were included in the calculation! <br>
+  <table id="resultTable"> 
+    ${convertToTimeFormat(totalSeconds, 1)} ${convertToTimeFormat(
+    totalSeconds,
+    1.25
+  )} ${convertToTimeFormat(totalSeconds, 1.5)} ${convertToTimeFormat(
+    totalSeconds,
+    1.75
+  )} ${convertToTimeFormat(totalSeconds, 2)}
+  </table>`;
 }
 
 function isElementVisible(el) {
@@ -32,43 +44,19 @@ function isElementVisible(el) {
   );
 }
 
-let newText = '';
-function renderer() {
-  const here = window.location.href;
-  if (here.includes('playlist')) {
-    newText = original + calculator();
-    const targetAdr = document.querySelector(
-      '#page-manager > ytd-browse:nth-child(1) > yt-page-header-renderer > yt-page-header-view-model > div.page-header-view-model-wiz__page-header-content > div.page-header-view-model-wiz__page-header-headline > div > yt-content-metadata-view-model > div:nth-child(2) > span:nth-child(1)'
-    );
-    try {
-      targetAdr.textContent = newText;
-    } catch {
-      console.log('error');
-    }
-  } else console.log('here is not a playlist');
+function convertToTimeFormat(total, speed) {
+  const totalSeconds = total / speed;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `<tr><td>(${speed}x)</td><td>${hours}h</td><td>${minutes}m</td><td>${Math.ceil(
+    seconds
+  )}s</td></tr>`;
 }
 
-const targetAdrr = document.querySelector(
-  '#page-manager > ytd-browse:nth-child(1) > yt-page-header-renderer > yt-page-header-view-model > div.page-header-view-model-wiz__page-header-content > div.page-header-view-model-wiz__page-header-headline > div > yt-content-metadata-view-model > div:nth-child(2) > span:nth-child(1)'
-);
-targetAdrr.addEventListener('click', () => {
-  renderer();
-});
-let original = '';
-try {
-  targetAdrr.style.cursor = 'pointer';
-  original = targetAdrr.textContent;
-} catch {
-  original = '? video';
-}
-targetAdrr.addEventListener('mouseover', function () {
-  // Açıklama içeriğini oluştur ve ekleyin
-  const ind = targetAdrr.textContent.indexOf('video');
-  original = targetAdrr.textContent.substring(0, ind + 5);
-  newText = original;
-  targetAdrr.textContent = 'Click to calculate the duration!';
-
-  targetAdrr.addEventListener('mouseout', function () {
-    targetAdrr.textContent = newText;
-  });
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'scrape') {
+    const data = calculator();
+    sendResponse({ data: data });
+  }
 });
