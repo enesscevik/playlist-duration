@@ -7,16 +7,61 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <button id="calcButton" type="button">
-      <img
-        src="https://www.svgrepo.com/show/524345/calculator.svg"
-        alt="cal"
-        width="20px"
-        height="20px"
-      />
-    </button>
-
+    <div class="buttons">
+      <button
+        id="calTab"
+        class="calcButton"
+        type="button"
+        data-tooltip="Calculate the length of the included videos."
+      >
+        <img
+          src="https://www.svgrepo.com/show/524345/calculator.svg"
+          alt="cal1"
+          width="20px"
+          height="20px"
+        />
+        <div class="tooltip"></div>
+      </button>
+      <button
+        id="scrollTop"
+        class="calcButton"
+        type="button"
+        data-tooltip="Goes to the far part of the page."
+      >
+        <img
+          src="https://www.svgrepo.com/show/382838/thin-arrow-up-down-directions.svg"
+          alt="cal3"
+          width="20px"
+          height="20px"
+        />
+        <div class="tooltip"></div>
+      </button>
+    </div>
     <div id="result"></div>
+    <div id="calculator">
+      <div id="con1">
+        <input
+          type="number"
+          class="inputs"
+          name="begin"
+          id="beginId"
+          placeholder="begin"
+          required
+        />
+        <input
+          type="number"
+          class="inputs"
+          name="end"
+          id="endId"
+          placeholder="end"
+          required
+        />
+        <button id="all" class="calB" type="button">All</button>
+      </div>
+      <div id="con2">
+        <button id="calculate" class="calB" type="button">Calculate</button>
+      </div>
+    </div>
 
     <script src="popup.js"></script>
   </body>
