@@ -1,7 +1,7 @@
 async function calculator(rangeBegin, range) {
   const here = window.location.href;
   if (!here.includes('playlist')) {
-    return 'no';
+    return [`no`, 0];
   }
   let targetTimeElements = visibleElementsFinder('badge-shape-wiz__text');
   if (targetTimeElements.length != indexFinder()) {
@@ -20,7 +20,7 @@ async function calculator(rangeBegin, range) {
       totalSeconds += timeParts[0] * 60 + timeParts[1];
     }
   });
-  console.log(targetTimeElements.length);
+  //console.log(targetTimeElements.length);
   const info =
     targetTimeElements.length == indexFinder()
       ? `<strong>${
@@ -29,16 +29,10 @@ async function calculator(rangeBegin, range) {
       : `(<strong>${rangeBegin + 1}</strong> - <strong>${
           rangeBegin + range
         }</strong>)`;
-  return `<p>${info} videos were included in the calculation!</p>
-  <table id="resultTable"> 
-    ${convertToTimeFormat(totalSeconds, 1)} ${convertToTimeFormat(
+  return [
+    `<p>${info} videos were included in the calculation!</p>`,
     totalSeconds,
-    1.25
-  )} ${convertToTimeFormat(totalSeconds, 1.5)} ${convertToTimeFormat(
-    totalSeconds,
-    1.75
-  )} ${convertToTimeFormat(totalSeconds, 2)}
-  </table>`;
+  ];
 }
 
 function visibleElementsFinder(cl) {
@@ -46,14 +40,22 @@ function visibleElementsFinder(cl) {
   return Array.from(vElements).filter(isElementVisible);
 }
 
+// önceki metod
+// function indexFinder() {
+//   const a = visibleElementsFinder('style-scope yt-formatted-string');
+//   let pre = '';
+//   for (let i = 0; i < a.length; i++) {
+//     if (a[i].textContent.includes('video')) break;
+//     else pre = a[i].textContent;
+//   }
+//   return pre ;
+// }
 function indexFinder() {
-  const a = visibleElementsFinder('style-scope yt-formatted-string');
-  let pre = '';
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].textContent.includes('video')) break;
-    else pre = a[i].textContent;
-  }
-  return pre;
+  const a = visibleElementsFinder(
+    'yt-core-attributed-string yt-content-metadata-view-model-wiz__metadata-text yt-core-attributed-string--white-space-pre-wrap yt-core-attributed-string--link-inherit-color'
+  );
+  let pre = a[1] !== undefined ? a[1].textContent : 0;
+  return parseInt(pre);
 }
 
 function isElementVisible(el) {
@@ -66,20 +68,10 @@ function isElementVisible(el) {
   );
 }
 
-function convertToTimeFormat(total, speed) {
-  const totalSeconds = total / speed;
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return `<tr><td>(${speed}x)</td><td>${hours}h</td><td>${minutes}m</td><td>${Math.ceil(
-    seconds
-  )}s</td></tr>`;
-}
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'scrape') {
     (async () => {
-      const i = Number(indexFinder());
+      const i = indexFinder();
       const begin = message.begin <= i ? message.begin : 1;
       const end = message.end <= i ? message.end : i;
 
@@ -96,6 +88,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     )
       window.scrollTo(0, document.documentElement.scrollHeight);
     else window.scrollTo(0, 0);
+  }
+  if (message.action === 'c') {
+    window.location.href =
+      'https://docs.google.com/forms/d/e/1FAIpQLSdydgQnMK0WGsteJJ70hq_vlzJ-BCytLT4ouloZMbgnm2_sxw/viewform?usp=header';
   }
 });
 
@@ -156,19 +152,3 @@ async function uploadThemAsync() {
   await new Promise((resolve) => setTimeout(resolve, 250)); // Sayfanın yüklenmesini bekleyin
   await scrollInterval(); // Sayfanın sonuna kadar kaydırmayı başlatın
 }
-
-// function uploadThem() {
-//   const y = window.scrollY;
-//   let i = 0;
-//   const scrollInterval = () => {
-//     window.scrollTo(0, i);
-//     i += 200;
-//     if (i >= document.documentElement.scrollHeight) {
-//       window.scrollTo(0, y);
-//       return;
-//     }
-//     setTimeout(scrollInterval, 5);
-//   };
-//   window.scrollTo(0, document.documentElement.scrollHeight);
-//   setTimeout(scrollInterval, 250);
-// }

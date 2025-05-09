@@ -1,3 +1,6 @@
+let timeDuration = 0;
+let xx = 1;
+let resTitle = '';
 document.getElementById('calculate').addEventListener('click', () => {
   const res = document.getElementById('result');
   const cal = document.getElementById('calculator');
@@ -15,15 +18,46 @@ document.getElementById('calculate').addEventListener('click', () => {
       { action: 'scrape', begin: begin, end: end },
       (response) => {
         res.classList.remove('loading');
-        if (response.data == 'no') {
-          res.innerHTML = `<p style="transform: translateY(10px)"><b>There is no playlist!</b></p>`;
+        if (response.data[0] === `no`) {
+          res.innerHTML = `<p style="transform: translateY(10px)"><b>Playlist does not exist!</b></p>`;
           setTimeout(() => {
             res.style.display = 'none';
             cal.style.display = 'unset';
           }, 1500);
-        } else res.innerHTML = response.data;
+        } else {
+          resTitle = response.data[0];
+          timeDuration = response.data[1];
+          res.innerHTML = `<p>${resTitle}</p> <label id="rangeNumber" for="range"><br></label>
+      <input
+        type="range"
+        id="range"
+        value="${xx}"
+        min="0.25"
+        max="10"
+        step="0.05"
+      />
+      ${convertToTimeFormat(timeDuration, xx)}
+      `;
+        }
       }
     );
+  });
+});
+
+function convertToTimeFormat(total, speed) {
+  const totalSeconds = total / speed;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `<table id = "resultTable"><tr><td>(${speed}x)</td><td>${hours}h</td><td>${minutes}m</td><td>${Math.ceil(
+    seconds
+  )}s</td></tr></table>`;
+}
+
+document.getElementById('contact').addEventListener('click', () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id, { action: 'c' }, () => {});
+    window.close();
   });
 });
 
@@ -38,6 +72,15 @@ document.getElementById('scrollTop').addEventListener('click', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+    let tab = tabs[0];
+    let url = tab.url;
+    if (!url.startsWith('https://www.youtube.com/')) {
+      //chrome.tabs.remove(tab.id);
+      window.close();
+    }
+  });
+
   const buttons = document.getElementsByClassName('calcButton');
 
   for (let i = 0; i < buttons.length; i++) {
@@ -78,4 +121,30 @@ setTimeout(() => {
 document.getElementById('all').addEventListener('click', () => {
   document.getElementById('beginId').value = '0';
   document.getElementById('endId').value = '999';
+});
+
+document.addEventListener('change', function (event) {
+  if (event.target && event.target.type === 'range') {
+    xx = document.getElementById('range').value;
+    const res = document.getElementById('result');
+    res.innerHTML = `<p>${resTitle}</p> <label id="rangeNumber" for="range"><br></label>
+  <input
+    type="range"
+    id="range"
+    value="${xx}"
+    min="0.25"
+    max="10"
+    step="0.05"
+  />
+  ${convertToTimeFormat(timeDuration, xx)}
+  `;
+  }
+});
+
+document.addEventListener('input', function (event) {
+  if (event.target && event.target.type === 'range') {
+    document.getElementById(
+      'rangeNumber'
+    ).textContent = `(${event.target.value}x)`;
+  }
 });
